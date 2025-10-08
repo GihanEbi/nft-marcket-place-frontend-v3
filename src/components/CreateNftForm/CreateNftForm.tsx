@@ -66,7 +66,9 @@ const CreateNftForm = () => {
       formData.append("name", name);
       formData.append("description", description);
 
-      const res = await axios.post("http://localhost:3001/upload", formData, {
+      // const res = await axios.post("http://localhost:3001/upload", formData, {
+
+      const res = await axios.post("/api/upload", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const { metadataUrl } = res.data;
@@ -96,7 +98,6 @@ const CreateNftForm = () => {
     }
   };
 
-  
   // reset form after successful transaction
   if (
     hash &&

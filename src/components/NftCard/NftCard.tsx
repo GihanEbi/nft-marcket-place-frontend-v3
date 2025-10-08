@@ -1,18 +1,57 @@
 "use client";
+import { formatEther } from "viem";
+import { useWriteContract, useAccount } from "wagmi";
+import MarketplaceABI from "@/abi/Marketplace.json";
 
 import Image from "next/image";
-import Link from "next/link"; // Import Link
+import Link from "next/link";
 
-interface NftCardProps {
-  title: string;
-  author: string;
-  price: string;
-  imageUrl: string;
+export interface NftData {
+  tokenId: bigint;
+  seller: string;
+  price: bigint;
+  name: string;
+  description: string;
+  image: string;
 }
 
-const NftCard = ({ title, author, price, imageUrl }: NftCardProps) => {
+interface NFTCardProps {
+  nft: NftData;
+  onBought: () => void; // A function to refetch data after a purchase
+}
+
+const marketplaceAddress = process.env
+  .NEXT_PUBLIC_MARKETPLACE_ADDRESS as `0x${string}`;
+
+const NftCard = ({ nft, onBought }: NFTCardProps) => {
+  const { address: userAddress } = useAccount();
+  const { writeContract, isPending, error, data: hash } = useWriteContract();
+
+  const handleBuy = () => {
+    // Prevent users from buying their own NFT
+    if (userAddress?.toLowerCase() === nft.seller.toLowerCase()) {
+      alert("You cannot buy your own NFT!");
+      return;
+    }
+
+    writeContract(
+      {
+        address: marketplaceAddress,
+        abi: MarketplaceABI,
+        functionName: "buyNft",
+        args: [nft.tokenId],
+        value: nft.price, // This is the crucial part for sending ETH
+      },
+      {
+        onSuccess: () => {
+          // Wait a moment for blockchain to update then refetch
+          setTimeout(onBought, 2000);
+        },
+      }
+    );
+  };
   // We'll create a simple slug from the title for the URL
-  const slug = title.toLowerCase().replace(/\s+/g, "-");
+  const slug = nft.name.toLowerCase().replace(/\s+/g, "-");
   return (
     <Link href={`/nft/${slug}`}>
       {" "}
@@ -62,31 +101,45 @@ const NftCard = ({ title, author, price, imageUrl }: NftCardProps) => {
         <div className="gradient-border">
           <div className="overflow-hidden rounded-t-xl">
             <Image
-              alt={title}
+              alt={nft.name}
               className="aspect-square w-full object-cover transition-transform duration-300"
-              src={imageUrl}
+              src={nft.image}
               width={300}
               height={300}
             />
           </div>
           <div className="p-4">
-            <h3 className="text-lg font-bold text-white">{title}</h3>
-            <p className="text-sm text-gray-400">by {author}</p>
+            <h3 className="text-lg font-bold text-white">{nft.name}</h3>
+            <p className="text-sm text-gray-400">{nft.description}</p>
             <div className="mt-4 flex items-center justify-between">
               <span
                 // 3. We MUST replace the custom color names with Tailwind's "arbitrary values".
                 // This is how you use a specific hex code directly in a class name.
                 className="text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#6A0DAD] to-[#8A2BE2]"
               >
-                {price}
+                {formatEther(nft.price)} ETH
               </span>
               <button
-                // 4. We do the same for the button background.
+                onClick={handleBuy}
+                disabled={
+                  isPending ||
+                  userAddress?.toLowerCase() === nft.seller.toLowerCase()
+                }
                 className="rounded-full bg-[#6A0DAD]/20 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-[#6A0DAD]"
               >
-                View
+                {isPending ? "Confirming..." : "Buy"}
               </button>
             </div>
+            {error && (
+              <p className="text-red-500 text-xs mt-2">
+                Error: {error.message}
+              </p>
+            )}
+            {hash && (
+              <p className="text-green-500 text-xs mt-2">
+                Success! Tx pending...
+              </p>
+            )}
           </div>
         </div>
       </div>

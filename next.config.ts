@@ -7,14 +7,20 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
         port: '',
-        pathname: '/**', // Existing rule for Google
+        pathname: '/**', 
       },
-      // Add this new rule for Imgur
       {
         protocol: 'https',
         hostname: 'i.imgur.com',
         port: '',
-        pathname: '/**', // Allow any path from Imgur
+        pathname: '/**',
+      },
+      // Add this new rule for Pinata
+      {
+        protocol: 'https',
+        hostname: 'gateway.pinata.cloud',
+        port: '',
+        pathname: '/ipfs/**', // Only allow paths starting with /ipfs/
       },
     ],
   },
