@@ -1,7 +1,5 @@
-import CreatePageHeader from "@/components/CreatePageHeader/CreatePageHeader";
 import InstructionSteps from "@/components/InstructionSteps/InstructionSteps";
 import CreateNftForm from "@/components/CreateNftForm/CreateNftForm";
-import CreatePageFooter from "@/components/CreatePageFooter/CreatePageFooter";
 
 export default function CreateNftPage() {
   return (

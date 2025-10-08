@@ -1,7 +1,20 @@
+"use client";
+import { useAccount, useConnect, useDisconnect } from "wagmi";
+import { injected } from "wagmi/connectors";
+
 import Link from "next/link";
 import Image from "next/image";
 
 const Navbar = () => {
+  const { address, isConnected } = useAccount();
+  const { connect } = useConnect();
+  const { disconnect } = useDisconnect();
+
+  const shortenAddress = (address: string) => {
+    if (!address) return "";
+    return `${address.slice(0, 6)}...${address.slice(address.length - 4)}`;
+  };
+
   return (
     <header className="sticky top-0 z-50 flex items-center justify-between whitespace-nowrap border-b border-gray-200/5 bg-background-light/80 px-4 py-3 backdrop-blur-sm dark:border-gray-800/5 dark:bg-[#0D0B14]/80">
       <div className="flex items-center gap-6">
@@ -26,18 +39,21 @@ const Navbar = () => {
         <nav className="hidden items-center gap-6 md:flex">
           <Link
             className="text-sm font-medium text-gray-600 hover:text-[#6A0DAD] dark:text-gray-300 dark:hover:text-[#6A0DAD]" // Replaced hover:text-primary
-            href="#"
+            href="/"
           >
             Home
           </Link>
-          <Link className="text-sm font-medium text-[#6A0DAD]" href="#">
+          <Link
+            className="text-sm font-medium text-gray-600 hover:text-[#6A0DAD] dark:text-gray-300 dark:hover:text-[#6A0DAD]"
+            href="/explore"
+          >
             {" "}
             {/* Replaced text-primary */}
             Explore
           </Link>
           <Link
             className="text-sm font-medium text-gray-600 hover:text-[#6A0DAD] dark:text-gray-300 dark:hover:text-[#6A0DAD]" // Replaced hover:text-primary
-            href="#"
+            href="/create"
           >
             Create
           </Link>
@@ -68,11 +84,29 @@ const Navbar = () => {
             />
           </div>
         </div>
-        <button className="rounded-lg bg-gradient-to-r from-[#6A0DAD] to-[#8A2BE2] px-4 py-2 text-sm font-bold text-white transition-all hover:shadow-lg hover:shadow-[#6A0DAD]/50">
-          {" "}
-          {/* Replaced from-primary, to-primary-focus, hover:shadow-primary/50 */}
-          Connect Wallet
-        </button>
+        {!isConnected ? (
+          <button
+            className="cursor-pointer rounded-lg bg-gradient-to-r from-[#6A0DAD] to-[#8A2BE2] px-4 py-2 text-sm font-bold text-white transition-all hover:shadow-lg hover:shadow-[#6A0DAD]/50"
+            onClick={() => connect({ connector: injected() })}
+          >
+            Connect Wallet
+          </button>
+        ) : (
+          // Use a flex container for better alignment
+          <div className="flex items-center gap-4">
+            <p className="rounded-lg bg-gray-800/50 px-3 py-2 text-sm font-medium text-white">
+              {/* Use the helper function here */}
+              {shortenAddress(address ?? "")}
+            </p>
+            <button
+              // New gradient color for the "Disconnect" button
+              className="cursor-pointer rounded-lg bg-gradient-to-r from-[#FF416C] to-[#FF4B2B] px-4 py-2 text-sm font-bold text-white transition-all hover:shadow-lg hover:shadow-[#FF416C]/50"
+              onClick={() => disconnect()}
+            >
+              Disconnect
+            </button>
+          </div>
+        )}
         <Link href="/profile">
           <Image
             alt="User profile"
