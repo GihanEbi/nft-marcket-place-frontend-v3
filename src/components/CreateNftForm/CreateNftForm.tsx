@@ -85,6 +85,7 @@ const CreateNftForm = () => {
         ],
       });
       setStatus("3/3: Please confirm transaction in your wallet...");
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       console.error(err);
       setAlert({
